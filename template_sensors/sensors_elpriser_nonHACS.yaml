@@ -1,0 +1,56 @@
+- sensor:
+  - name: Elpris nu
+    unique_id: elpris_ore_current
+    state_class: measurement
+    unit_of_measurement: "öre/kWh"
+    icon: mdi:meter-electric
+    state: >
+      {% set cost = states('sensor.nord_pool_se3_current_price') | float(0) %}
+      {{ (cost * 100) | round(1, default=0) }}
+  - name: Elpris snart
+    unique_id: elpris_ore_next
+    state_class: measurement
+    unit_of_measurement: "öre/kWh"
+    icon: mdi:meter-electric
+    state: >
+      {% set cost = states('sensor.nord_pool_se3_next_price') | float(0) %}
+      {{ (cost * 100) | round(1, default=0) }}
+
+# This is for better timing of the battery charging
+  - name: "Has Cheaper Hour Later Today"
+    unique_id: has_cheaper_hour_later_today
+    state: >
+      {% set now_hour = now().hour %}
+      {% set prices = state_attr('sensor.elpriser_idag', 'data') %}
+      {% set current_price = (prices[now_hour].price if prices | length > now_hour else 9999) | float(9999) %}
+      {% set cheaper_later = namespace(value=false) %}
+
+      {% if prices is iterable %}
+        {% for p in prices %}
+          {% set hour = as_datetime(p.start).hour %}
+          {% if hour > now_hour and p.price < current_price %}
+            {% set cheaper_later.value = true %}
+            {% break %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+
+      {{ cheaper_later.value }}
+
+  - name: "Peak Price Hour"
+    unique_id: peak_price_hour
+    state: >
+      {% set prices = state_attr('sensor.elpriser_idag', 'data') %}
+      {% if prices is not iterable %}
+        15
+      {% else %}
+        {% set ns = namespace(max_price=-9999, peak_hour=15) %}
+        {% for p in prices %}
+          {% set p_start = p.start | as_datetime %}
+          {% if 12 <= p_start.hour <= 20 and (p.price | float) > ns.max_price %}
+            {% set ns.max_price = p.price | float %}
+            {% set ns.peak_hour = p_start.hour %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.peak_hour }}
+      {% endif %}

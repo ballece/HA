@@ -1,0 +1,56 @@
+- triggers:
+    - trigger: time_pattern
+      minutes: "/10"    # Check every 10 minutes (only after 11 am, see below)
+    - trigger: homeassistant
+      event: start
+  conditions:
+    - condition: template   # Only start checking after 11 am, with a reset just after midnight
+      value_template: >
+        {{ now().hour >= 11 or (now().hour == 0 and now().minute < 50) }}
+    - condition: template   # Only retreive data if the sensor is empty or date is today
+      value_template: >
+        {% set prices = state_attr('sensor.elpriser_imorgon', 'data') %}
+        {% if prices is not iterable or prices | length == 0 %}
+          true
+        {% else %}
+          {% set first_start = prices[0].start | as_datetime %}
+          {{ first_start.date() == now().date() }}
+        {% endif %}
+  actions:
+    - action: nordpool.get_prices_for_date
+      data:
+        config_entry: 01JFZZ98CERMRTWQQ92NR5PD56
+        date: "{{ now().date() + timedelta(days=1) }}"
+        areas: SE3
+        currency: SEK   # Datan kommer dock som milli-SEK
+      response_variable: tomorrow_prices
+  sensor:
+    - name: "Elpriser imorgon"
+      unique_id: elpriser_imorgon
+      unit_of_measurement: "öre/kWh"
+      icon: mdi:meter-electric
+      state: >
+        {% if tomorrow_prices is mapping and tomorrow_prices['SE3'] is iterable and tomorrow_prices['SE3'] | length > 0 %}
+          {% set data = namespace(prices=[]) %}
+          {% for state in tomorrow_prices['SE3'] %}
+            {% set data.prices = data.prices + [(state.price / 10) | round(1, default=0)] %}
+          {% endfor %}
+          {{ min(data.prices) }}
+        {% else %}
+          0
+        {% endif %}
+      attributes:
+        data: >
+          {% if tomorrow_prices is mapping and tomorrow_prices['SE3'] is iterable and tomorrow_prices['SE3'] | length > 0 %}
+            {% set data = namespace(prices=[]) %}
+            {% for state in tomorrow_prices['SE3'] %}
+              {% set corrected_start = as_datetime(state.start).astimezone().strftime('%Y-%m-%d %H:%M:%S') %}
+              {% set corrected_end = as_datetime(state.end).astimezone().strftime('%Y-%m-%d %H:%M:%S') %}
+              {% set data.prices = data.prices + [{'start':corrected_start, 'end':corrected_end, 'price': (state.price / 10) | round(1, default=0)}] %}
+            {% endfor %}
+            {{ data.prices | default(0) }}
+          {% else %}
+            []
+          {% endif %}
+#        availability: "{{ tomorrow_prices is defined }}"
+        last_updated: "{{ now().isoformat() }}"

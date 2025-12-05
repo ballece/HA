@@ -1,0 +1,16 @@
+# Detta hjälper mig att beräkna normaltariff enligt Bjärke energi
+# https://www.bjerke-energi.se/elnat/tariffer/normaltariff/
+- sensor:
+  - name: "Filtered Hourly Import"
+    unique_id: filtered_hourly_import
+    state: >
+      {% set hour = now().hour %}
+      {% if 6 <= hour < 22 %}
+        {{ states('sensor.power_meter_consumption_energy_hourly') | float }}
+      {% else %}
+        0
+      {% endif %}
+    unit_of_measurement: "kWh"
+    state_class: measurement
+    availability: >
+      {{ states('sensor.power_meter_consumption_energy_hourly') not in ['unavailable', 'unknown'] }}

@@ -1,0 +1,83 @@
+- sensor:
+  - name: "current_hour"
+    unique_id: current_hour
+    state: "{{ now().hour | int }}"
+
+  - name: "is_ev_hours"
+    unique_id: is_ev_hours
+    state: >
+      {% set h = now().hour | int %}
+      {{ (h >= 22) or (h < 6) }}
+
+  - name: "is_daylight"
+    unique_id: is_daylight
+    state: >
+      {% set sun_state = states('sun.sun') %}
+      {{ sun_state == 'above_horizon' }}
+
+  - name: "solar_peak_hour"
+    unique_id: solar_peak_hour
+    state: >
+      {% set peak = states('sensor.solcast_pv_forecast_peak_time_today') %}
+      {% if peak in ['unknown','unavailable',''] %}
+        13
+      {% else %}
+        {{ peak | int }}
+      {% endif %}
+
+  # Huawei forcible flags
+  - name: "is_forcible_charging"
+    unique_id: is_forcible_charging
+    state: >
+      {{ states('sensor.batteries_forcible_charge') in ['True','true','on','1'] }}
+
+  - name: "is_forcible_discharging"
+    unique_id: is_forcible_discharging
+    state: >
+      {{ states('sensor.batteries_forcible_discharge') in ['True','true','on','1'] }}
+
+  - name: "is_solar_strong_today"
+    unique_id: is_solar_strong_today
+    state: >
+      {% set summer = is_state('input_boolean.summer_mode','on') %}
+      {% set daylight = states('sensor.is_daylight') in ['True','true','on'] %}
+      {{ summer and daylight }}
+
+  # Charge permission using elpris_ore_current (öre)
+  - name: "charge_allowed_now"
+    unique_id: charge_allowed_now
+    state: >
+      {% set price = states('sensor.elpris_ore_current') | float(9999) %}
+      {% set buy_thr = states('input_number.buy_threshold_ore') | float(0) %}
+      {% set soc = states('sensor.batteries_state_of_capacity') | float(0) %}
+      {% set max_soc = states('input_number.max_soc') | float(90) %}
+      {% set reserve_soc = states('input_number.reserve_soc_morning') | float(75) %}
+      {% set solar_peak = states('sensor.solar_peak_hour') | int %}
+      {% set hour = states('sensor.current_hour') | int %}
+      {% set ev_hours = states('sensor.is_ev_hours') in ['True','true','on'] %}
+      {% set summer = is_state('input_boolean.summer_mode','on') %}
+
+      {% set price_ok = price <= buy_thr %}
+      {% set solar_guard = (summer and (hour < solar_peak) and (soc >= reserve_soc)) %}
+      {% set ev_guard = ev_hours %}
+
+      {{ price_ok and (soc < max_soc) and (not solar_guard) and (not ev_guard) }}
+
+  # Discharge permission using elpris_ore_current (öre)
+  - name: "discharge_allowed_now"
+    unique_id: discharge_allowed_now
+    state: >
+      {% set price = states('sensor.elpris_ore_current') | float(-9999) %}
+      {% set sell_thr = states('input_number.sell_threshold_ore') | float(200) %}
+      {% set soc = states('sensor.batteries_state_of_capacity') | float(0) %}
+      {% set min_soc = states('input_number.min_soc') | float(5) %}
+      {% set hour = states('sensor.current_hour') | int %}
+      {% set solar_peak = states('sensor.solar_peak_hour') | int %}
+      {% set summer = is_state('input_boolean.summer_mode','on') %}
+      {% set solar_strong = states('sensor.is_solar_strong_today') in ['True','true','on'] %}
+
+      {% set time_ok = hour >= 16 %}
+      {% set price_ok = price >= sell_thr %}
+      {% set solar_guard = summer and solar_strong and (hour < solar_peak) %}
+
+      {{ price_ok and time_ok and (soc > (min_soc + 15)) and (not solar_guard) }}

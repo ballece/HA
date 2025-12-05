@@ -1,0 +1,46 @@
+  - sensor:
+      - name: "Elpriser för Predbat"
+        unique_id: elpriser_predbat
+        unit_of_measurement: "öre/kWh"
+        state: >
+          {% set today_prices = state_attr('sensor.elpriser_idag', 'data') %}
+          {% if today_prices is iterable and today_prices | length > 0 %}
+            {% set data = namespace(prices=[]) %}
+            {% for state in today_prices %}
+              {% set data.prices = data.prices + [state.price] %}
+            {% endfor %}
+            {{ min(data.prices) }}
+          {% else %}
+            0
+          {% endif %}
+        attributes:
+          raw_today: >
+            {% set today_prices = state_attr('sensor.elpriser_idag', 'data') %}
+            {% if today_prices is iterable and today_prices | length > 0 %}
+              {% set data = namespace(prices=[]) %}
+              {% for state in today_prices %}
+                {% set from_time = as_datetime(state.start).isoformat() %}
+                {% set to_time = as_datetime(state.end).isoformat() %}
+                {% set rate = state.price %}
+                {% set data.prices = data.prices + [{'rate': rate, 'from': from_time, 'to': to_time }] %}
+              {% endfor %}
+              {{ data.prices }}
+            {% else %}
+              []
+            {% endif %}
+          raw_tomorrow: >
+            {% set tomorrow_prices = state_attr('sensor.elpriser_imorgon', 'data') %}
+            {% if tomorrow_prices is iterable and tomorrow_prices | length > 0 %}
+              {% set data = namespace(prices=[]) %}
+              {% for state in tomorrow_prices %}
+                {% set from_time = as_datetime(state.start).isoformat() %}
+                {% set to_time = as_datetime(state.end).isoformat() %}
+                {% set rate = state.price %}
+                {% set data.prices = data.prices + [{'rate': rate, 'from': from_time, 'to': to_time }] %}
+              {% endfor %}
+              {{ data.prices }}
+            {% else %}
+              []
+            {% endif %}
+          availability: "{{ (state_attr('sensor.elpriser_idag', 'data') is defined) and (state_attr('sensor.elpriser_imorgon', 'data') is defined) }}"
+          last_updated: "{{ now().isoformat() }}"

@@ -1,0 +1,120 @@
+# ########## Start: Utility Meter Sensors ##########
+#
+#utility_meter:
+  #
+  # For Energy Cards
+  # For Solar Yield - Self use
+  # For Solar Yield - Self-Sufficiency
+  #
+  power_meter_consumption_energy_15min:
+    unique_id: power_meter_consumption_energy_15min
+    name: "power_meter_consumption_energy_15min"
+    source: sensor.power_meter_consumption
+    cycle: quarter-hourly
+    always_available: true
+  power_meter_consumption_energy_hourly:
+    unique_id: power_meter_consumption_energy_hourly
+    name: "power_meter_consumption_energy_hourly"
+    source: sensor.power_meter_consumption
+    cycle: hourly
+    always_available: true
+  power_meter_consumption_energy_daily:
+    unique_id: power_meter_consumption_energy_daily
+    name: "power_meter_consumption_energy_daily"
+    # friendly_name: 'power_meter_consumption - Energy daily'
+    source: sensor.power_meter_consumption
+    cycle: daily
+    always_available: true
+  power_meter_consumption_energy_weekly:
+    unique_id: power_meter_consumption_energy_weekly
+    name: "power_meter_consumption_energy_weekly"
+    # friendly_name: 'power_meter_consumption - Energy weekly'
+    source: sensor.power_meter_consumption
+    cycle: weekly
+  power_meter_consumption_energy_monthly:
+    unique_id: power_meter_consumption_energy_monthly
+    name: "power_meter_consumption_energy_monthly"
+    # friendly_name: 'power_meter_consumption - Energy monthly'
+    source: sensor.power_meter_consumption
+    cycle: monthly
+  power_meter_consumption_energy_yearly:
+    unique_id: power_meter_consumption_energy_yearly
+    name: "power_meter_consumption_energy_yearly"
+    # friendly_name: 'power_meter_consumption - Energy yearly'
+    source: sensor.power_meter_consumption
+    cycle: yearly
+  #
+  # For Energy Cards
+  # For Solar Yield - Self use
+  # For Solar Yield - Self-Sufficiency
+  #
+  power_meter_exported_energy_daily:
+    unique_id: power_meter_exported_energy_daily
+    name: "power_meter_exported_energy_daily"
+    # friendly_name: 'power_meter_exported - Energy daily'
+    source: sensor.power_meter_exported
+    cycle: daily
+  power_meter_exported_energy_weekly:
+    unique_id: power_meter_exported_energy_weekly
+    name: "power_meter_exported_energy_weekly"
+    # friendly_name: 'power_meter_exported - Energy weekly'
+    source: sensor.power_meter_exported
+    cycle: weekly
+  power_meter_exported_energy_monthly:
+    unique_id: power_meter_exported_energy_monthly
+    name: "power_meter_exported_energy_monthly"
+    # friendly_name: 'power_meter_exported - Energy monthly'
+    source: sensor.power_meter_exported
+    cycle: monthly
+  power_meter_exported_energy_yearly:
+    unique_id: power_meter_exported_energy_yearly
+    name: "power_meter_exported_energy_yearly"
+    # friendly_name: 'power_meter_exported - Energy yearly'
+    source: sensor.power_meter_exported
+    cycle: yearly
+  #
+  # For Solar Yield - Self use
+  # For Solar Yield - Self-Sufficiency
+  #
+  inverter_yield_weekly:
+    unique_id: inverter_yield_weekly
+    name: "inverter_yield_weekly"
+    # friendly_name: ' inverter_yield - Energy weekly'
+    source: sensor.inverter_total_yield
+    cycle: weekly
+  inverter_yield_monthly:
+    unique_id: inverter_yield_monthly
+    name: "inverter_yield_monthly"
+    # friendly_name: ' inverter_yield - Energy monthly'
+    source: sensor.inverter_total_yield
+    cycle: monthly
+  inverter_yield_yearly:
+    unique_id: inverter_yield_yearly
+    name: "inverter_yield_yearly"
+    # friendly_name: ' inverter_yield - Energy yearly'
+    source: sensor.inverter_total_yield
+    cycle: yearly
+  #
+  # For Solar Yield - Self use
+  # For Solar Yield - Self-Sufficiency
+  #
+  house_consumption_energy_weekly:
+    unique_id: house_consumption_energy_weekly
+    name: "house_consumption_energy_weekly"
+    # friendly_name: 'house_consumption - Energy weekly'
+    source: sensor.house_consumption_energy_total
+    cycle: weekly
+  house_consumption_energy_monthly:
+    unique_id: house_consumption_energy_monthly
+    name: "house_consumption_energy_monthly"
+    # friendly_name: 'house_consumption - Energy monthly'
+    source: sensor.house_consumption_energy_total
+    cycle: monthly
+  house_consumption_energy_yearly:
+    unique_id: house_consumption_energy_yearly
+    name: "house_consumption_energy_yearly"
+    # friendly_name: 'house_consumption - Energy yearly'
+    source: sensor.house_consumption_energy_total
+    cycle: yearly
+#
+# ########## End: Utility Meter Sensors ##########

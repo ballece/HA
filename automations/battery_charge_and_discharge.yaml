@@ -1,0 +1,71 @@
+- id: '1740350947401'
+  alias: Smart Battery Charge/Discharge with Nord Pool Prices
+  description: ''
+  triggers:
+  - minutes: /15
+    trigger: time_pattern
+  conditions:
+  - condition: template
+    value_template: "{% set now = now().hour %} {% if now >= 22 or now < 6 %}\n  false
+      \ # Block battery charging during EV charging hours\n{% else %}\n  true\n{%
+      endif %}\n"
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.nordpool
+        attribute: current_price
+        above: -100
+      - condition: numeric_state
+        entity_id: sensor.batteries_state_of_capacity
+        below: 80
+        above: 2
+      - condition: time
+        after: '10:00:00'
+        before: '15:00:00'
+        weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+        - sun
+      sequence:
+      - action: huawei_solar.forcible_charge
+        metadata: {}
+        data:
+          power: '3000'
+          device_id: 898980bfd3e211f7d2b52da0aeee8a91
+          duration: 15
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.nordpool
+        above: 0
+        attribute: current_price
+      - condition: numeric_state
+        entity_id: sensor.batteries_state_of_capacity
+        above: 10
+      - condition: time
+        after: '16:00:00'
+        weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+        - sun
+      sequence:
+      - action: huawei_solar.forcible_discharge_soc
+        metadata: {}
+        data:
+          target_soc: 15
+          power: '3000'
+          device_id: 898980bfd3e211f7d2b52da0aeee8a91
+    default:
+    - action: huawei_solar.stop_forcible_charge
+      metadata: {}
+      data:
+        device_id: 898980bfd3e211f7d2b52da0aeee8a91
+  mode: single

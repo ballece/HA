@@ -1,0 +1,67 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+template: !include_dir_merge_list template_sensors/
+utility_meter: !include utilitymeter.yaml
+
+input_number:
+  normaltariff:
+    name: "Normaltariff"
+    min: 0
+    max: 100
+    unit_of_measurement: kWh
+    step: 0.01
+    
+  buy_threshold_ore:
+    name: "Buy threshold (öre)"
+    min: 50
+    max: 300
+    step: 1
+    unit_of_measurement: "öre"
+    icon: mdi:arrow-down-bold
+
+  sell_threshold_ore:
+    name: "Sell threshold (öre)"
+    min: 0
+    max: 600
+    step: 1
+    unit_of_measurement: "öre"
+    icon: mdi:arrow-up-bold
+
+  reserve_soc_morning:
+    name: "Reserve SOC before solar peak (%)"
+    min: 50
+    max: 95
+    step: 1
+    unit_of_measurement: "%"
+    icon: mdi:battery
+
+  min_soc:
+    name: "Min SOC (%)"
+    min: 5
+    max: 20
+    step: 1
+    unit_of_measurement: "%"
+    icon: mdi:battery-alert
+
+  max_soc:
+    name: "Max SOC (%)"
+    min: 70
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    icon: mdi:battery
+    
+
+input_boolean:
+  summer_mode:
+    name: "Summer mode (solar-aware)"
+    icon: mdi:white-balance-sunny

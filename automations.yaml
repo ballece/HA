@@ -1,0 +1,103 @@
+# Smart Battery Control with Huawei forcible mode awareness
+# Single control loop: evaluate every 15 minutes only
+# Guard: do NOT start forcible discharge when PV is naturally charging (battery charge_discharge_power > 0)
+# Uses huawei_solar.stop_forcible_charge to stop both charge and discharge
+
+- id: 'battery_control_loop_15min'
+  alias: Battery Control Loop (15m)
+  description: Evaluate price/SOC and start/stop forcible modes appropriately every 15 minutes
+  trigger:
+    - platform: time_pattern
+      minutes: "/15"
+  condition: []
+  action:
+    - choose:
+        # Start forcible charging if allowed, not already forcing charge, and not currently forcing discharge
+        - conditions:
+            - condition: state
+              entity_id: sensor.charge_allowed_now
+              state: "True"
+            - condition: state
+              entity_id: sensor.is_forcible_charging
+              state: "False"
+            - condition: state
+              entity_id: sensor.is_forcible_discharging
+              state: "False"
+          sequence:
+            - service: huawei_solar.forcible_charge
+              data:
+                power: "3000"
+                device_id: 898980bfd3e211f7d2b52da0aeee8a91
+                duration: 15
+
+        # Start forcible discharging if allowed, not already forcing discharge, not currently forcing charge,
+        # and only when PV is NOT naturally charging (i.e., charge_discharge_power <= 0)
+        - conditions:
+            - condition: state
+              entity_id: sensor.discharge_allowed_now
+              state: "True"
+            - condition: state
+              entity_id: sensor.is_forcible_discharging
+              state: "False"
+            - condition: state
+              entity_id: sensor.is_forcible_charging
+              state: "False"
+            - condition: numeric_state
+              entity_id: sensor.batteries_charge_discharge_power
+              below: 0
+          sequence:
+            - service: huawei_solar.forcible_discharge_soc
+              data:
+                target_soc: "{{ (states('input_number.min_soc') | float(5)) | int }}"
+                power: "3000"
+                device_id: 898980bfd3e211f7d2b52da0aeee8a91
+      default:
+        # If neither allowed, ensure forcible modes are stopped (but don't interfere with natural PV charging)
+        - choose:
+            - conditions:
+                - condition: state
+                  entity_id: sensor.is_forcible_charging
+                  state: "True"
+              sequence:
+                - service: huawei_solar.stop_forcible_charge
+                  data:
+                    device_id: 898980bfd3e211f7d2b52da0aeee8a91
+            - conditions:
+                - condition: state
+                  entity_id: sensor.is_forcible_discharging
+                  state: "True"
+              sequence:
+                - service: huawei_solar.stop_forcible_charge
+                  data:
+                    device_id: 898980bfd3e211f7d2b52da0aeee8a91
+
+- alias: "Update Normaltariff"
+  trigger:
+    - platform: state
+      entity_id: sensor.filtered_hourly_import
+  condition:
+    - condition: template
+      value_template: >
+        {{ states('sensor.filtered_hourly_import') | float(0) > states('input_number.normaltariff') | float(0) }}
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.normaltariff
+      data:
+        value: "{{ states('sensor.filtered_hourly_import') | float(0) }}"
+
+- alias: "Reset Normaltariff"
+  trigger:
+    - platform: time
+      at: "00:00:00"
+  condition:
+    - condition: template
+      value_template: "{{ now().day == 1 }}"
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.normaltariff
+      data:
+        value: 0
+
+

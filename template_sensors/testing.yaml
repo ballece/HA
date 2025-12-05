@@ -1,0 +1,16 @@
+- triggers:
+    - trigger: homeassistant
+      event: start
+    - trigger: time_pattern # DEBUG
+      seconds: "/5" #DEBUG
+  conditions:
+    - condition: template
+      value_template: >
+        {{ states('sensor.hoppsan') in ['unknown', 'unavailable', ''] }}
+    - condition: template
+      value_template: >
+        {{ now().hour >= 7 }}
+  sensor:
+    - name: "Hoppsan"
+      unique_id: hoppsan
+      state: "{{ now() }}"
