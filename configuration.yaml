@@ -36,6 +36,7 @@ input_number:
     step: 1
     unit_of_measurement: "öre/kWh"
     icon: mdi:arrow-down-bold
+    
 # We sell if elpris_ore_current >= sell_threshold_ore
   sell_threshold_ore:
     name: "Sell threshold (öre/kWh)"

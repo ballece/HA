@@ -106,8 +106,11 @@
         entity_id: input_number.buy_threshold_ore
       data:
         value: >
-          {{  (states('sensor.elpris_buy_kostnad') | float(0)) -
-              (states('input_number.desired_profit_margin') | float(0)) }}
+          {% set v = (states('sensor.elpris_buy_kostnad') | float(0)) -
+                     (states('input_number.desired_profit_margin') | float(0)) %}
+          {% set v_min = state_attr('input_number.buy_threshold_ore','min') %}
+          {% set v_max = state_attr('input_number.buy_threshold_ore','max') %}
+          {{ [v_max, [v_min, v]|max]|min }}
 
 - alias: "Update Sell Threshold Based on Cost"
   trigger:
@@ -123,7 +126,10 @@
         entity_id: input_number.sell_threshold_ore
       data:
         value: >
-          {{ (states('sensor.elpris_ore_current') | float(100)) }}
+          {% set v = (states('sensor.elpris_ore_current') | float(0)) %}
+          {% set v_min = state_attr('input_number.sell_threshold_ore','min') %}
+          {% set v_max = state_attr('input_number.sell_threshold_ore','max') %}
+          {{ [v_max, [v_min, v]|max]|min }}
 
 
 ## Normaltariff automations
