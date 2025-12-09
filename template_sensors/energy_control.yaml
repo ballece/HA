@@ -47,7 +47,7 @@
   - name: "charge_allowed_now"
     unique_id: charge_allowed_now
     state: >
-      {% set price = states('sensor.elpris_ore_current') | float(9999) %}
+      {% set price = states('sensor.elpris_buy_kostnad') | float(9999) %}
       {% set buy_thr = states('input_number.buy_threshold_ore') | float(0) %}
       {% set soc = states('sensor.batteries_state_of_capacity') | float(0) %}
       {% set max_soc = states('input_number.max_soc') | float(90) %}
@@ -87,7 +87,7 @@
     unique_id: elpris_month_average
     unit_of_measurement: "öre/kWh"
     state: >
-      {{ states('sensor.elspot_monthly_average') | float(0) }}
+      {{ states('input_number.elspot_monthly_average') | float(0) }}
       
   - name: "elpris_buy_kostnad"
     unique_id: elpris_buy_kostnad

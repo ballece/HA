@@ -33,7 +33,7 @@
                 power: "3000"
                 device_id: 898980bfd3e211f7d2b52da0aeee8a91
                 duration: 15
-                  # Block: Normaltariff would be increased
+        # Block: Normaltariff would be increased, send notification
         - conditions:
             - condition: template
               value_template: >
@@ -95,7 +95,7 @@
     - platform: time
       at: "00:15:00"
     - platform: state
-      entity_id: input_number.buy_profit_margin
+      entity_id: input_number.desired_profit_margin
     - platform: state
       entity_id: input_number.elspot_monthly_average
     - platform: state
@@ -106,29 +106,24 @@
         entity_id: input_number.buy_threshold_ore
       data:
         value: >
-          {{
-            (states('sensor.elpris_buy_kostnad') | float(0)) -
-            (states('input_number.buy_profit_margin') | float(0))
-          }}
+          {{  (states('sensor.elpris_buy_kostnad') | float(0)) -
+              (states('input_number.desired_profit_margin') | float(0)) }}
 
-- alias: "Update Sell Threshold Based on Cost, Margin, and Efficiency"
+- alias: "Update Sell Threshold Based on Cost"
   trigger:
     - platform: time
       at: "00:20:00"
     - platform: state
-      entity_id: input_number.profit_margin
+      entity_id: input_number.desired_profit_margin
     - platform: state
-      entity_id: sensor.elpris_buy_kostnad
+      entity_id: sensor.elpris_ore_current
   action:
     - service: input_number.set_value
       target:
         entity_id: input_number.sell_threshold_ore
       data:
         value: >
-          {{
-            (states('sensor.elpris_buy_kostnad') | float(0)) +
-            (states('input_number.profit_margin') | float(0))
-          }}
+          {{ (states('sensor.elpris_ore_current') | float(100)) }}
 
 
 ## Normaltariff automations
