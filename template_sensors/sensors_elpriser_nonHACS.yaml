@@ -21,7 +21,7 @@
     unique_id: has_cheaper_hour_later_today
     state: >
       {% set now_hour = now().hour %}
-      {% set prices = state_attr('sensor.elpriser_idag', 'data') %}
+      {% set prices = state_attr('sensor.elpriser_idag', 'data') or [] %}
       {% set current_price = (prices[now_hour].price if prices | length > now_hour else 9999) | float(9999) %}
       {% set cheaper_later = namespace(value=false) %}
 
