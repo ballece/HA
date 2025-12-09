@@ -18,22 +18,53 @@ input_number:
     min: 0
     max: 100
     unit_of_measurement: kWh
+    step: 0.1
+
+  elspot_monthly_average:
+    name: "Elspot Monthly Average"
+    min: 0
+    max: 500
     step: 0.01
+    unit_of_measurement: "öre/kWh"
     
   buy_threshold_ore:
-    name: "Buy threshold (öre)"
+    name: "Buy threshold (öre/kWh)"
     min: 50
     max: 300
     step: 1
-    unit_of_measurement: "öre"
+    unit_of_measurement: "öre/kWh"
     icon: mdi:arrow-down-bold
 
   sell_threshold_ore:
-    name: "Sell threshold (öre)"
+    name: "Sell threshold (öre/kWh)"
     min: 0
     max: 600
     step: 1
-    unit_of_measurement: "öre"
+    unit_of_measurement: "öre/kWh"
+    icon: mdi:arrow-up-bold
+
+  desired_profit_margin:
+    name: "Önskad vinstmarginal (öre/kWh)"
+    min: 10
+    max: 500
+    step: 1
+    unit_of_measurement: "öre/kWh"
+    icon: mdi:arrow-up-bold
+
+  skekraft_paslag:
+    name: "SkeKraft påslag (öre/kWh)"
+    min: 0
+    max: 100
+    step: 0.1
+    unit_of_measurement: "öre/kWh"
+    icon: mdi:arrow-up-bold
+
+  skekraft_rorligt:
+    name: "SkeKraft rörliga avgifter (öre/kWh)"
+    min: 0
+    max: 100
+    step: 0.1
+    unit_of_measurement: "öre/kWh"
     icon: mdi:arrow-up-bold
 
   reserve_soc_morning:

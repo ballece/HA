@@ -12,7 +12,7 @@
   condition: []
   action:
     - choose:
-        # Start forcible charging if allowed, not already forcing charge, and not currently forcing discharge
+        # Start forcible charging if allowed, not already forcing charge, not currently forcing discharge, and not increasing normaltariff
         - conditions:
             - condition: state
               entity_id: sensor.charge_allowed_now
@@ -23,12 +23,29 @@
             - condition: state
               entity_id: sensor.is_forcible_discharging
               state: "False"
+            # Check if current hourly import + 15 min of 3 kW battery charge + 15 min of 2 kW other use would increase normaltariff
+            - condition: template
+              value_template: >
+                {{ (states('sensor.filtered_hourly_import') | float(0) + 0.25*3 + 0.25*2) <= states('input_number.normaltariff') | float(0) }}
           sequence:
             - service: huawei_solar.forcible_charge
               data:
                 power: "3000"
                 device_id: 898980bfd3e211f7d2b52da0aeee8a91
                 duration: 15
+                  # Block: Normaltariff would be increased
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ (states('sensor.filtered_hourly_import') | float(0) + 0.25*3 + 0.25*2) > states('input_number.normaltariff') | float(0) }}
+          sequence:
+            - service: persistent_notification.create
+              data:
+                title: "Normaltariff block"
+                message: >
+                  Charged 0.75 kWh would raise import above normaltariff. Import: {{ states('sensor.filtered_hourly_import') }},
+                  Normaltariff: {{ states('input_number.normaltariff') }}
+ 
 
         # Start forcible discharging if allowed, not already forcing discharge, not currently forcing charge,
         # and only when PV is NOT naturally charging (i.e., charge_discharge_power <= 0)
@@ -71,6 +88,50 @@
                   data:
                     device_id: 898980bfd3e211f7d2b52da0aeee8a91
 
+
+## Update buy and sell thresholds
+- alias: "Update Buy Threshold Based on Buy Cost and Margin"
+  trigger:
+    - platform: time
+      at: "00:15:00"
+    - platform: state
+      entity_id: input_number.buy_profit_margin
+    - platform: state
+      entity_id: input_number.elspot_monthly_average
+    - platform: state
+      entity_id: sensor.elpris_buy_kostnad
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.buy_threshold_ore
+      data:
+        value: >
+          {{
+            (states('sensor.elpris_buy_kostnad') | float(0)) -
+            (states('input_number.buy_profit_margin') | float(0))
+          }}
+
+- alias: "Update Sell Threshold Based on Cost, Margin, and Efficiency"
+  trigger:
+    - platform: time
+      at: "00:20:00"
+    - platform: state
+      entity_id: input_number.profit_margin
+    - platform: state
+      entity_id: sensor.elpris_buy_kostnad
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.sell_threshold_ore
+      data:
+        value: >
+          {{
+            (states('sensor.elpris_buy_kostnad') | float(0)) +
+            (states('input_number.profit_margin') | float(0))
+          }}
+
+
+## Normaltariff automations
 - alias: "Update Normaltariff"
   trigger:
     - platform: state
@@ -101,3 +162,51 @@
         value: 0
 
 
+## Monthly average spot price automations
+- alias: "Update Monthly Average with Today's Spot"
+  trigger:
+    - platform: time
+      at: '00:05:00'
+  condition:
+    - condition: template
+      value_template: "{{ now().day != 1 }}"
+  action:
+    - variables:
+        # Today's 15-min spot prices from sensor.elpriser_idag attribute
+        prices: >
+          {% set attrs = state_attr('sensor.elpriser_idag', 'values') %}
+          {{ attrs if attrs is iterable else [] }}
+        todays_avg: >
+          {% if prices and prices|length > 0 %}
+            {{ (prices | map('float') | list | sum) / (prices | length) }}
+          {% else %}
+            0
+          {% endif %}
+        prev_avg: "{{ states('input_number.elspot_monthly_average') | float(0) }}"
+        prev_days: "{{ now().day - 1 }}"
+        new_days: "{{ prev_days + 1 }}"
+        new_avg: >
+          {% if prev_days > 0 %}
+            {{ ((prev_avg * prev_days) + todays_avg) / new_days }}
+          {% else %}
+            {{ todays_avg }}
+          {% endif %}
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.elspot_monthly_average
+      data:
+        value: "{{ new_avg }}"
+
+- alias: "Reset Elspot Monthly Average"
+  trigger:
+    - platform: time
+      at: '00:01:00'
+  condition:
+    - condition: template
+      value_template: "{{ now().day == 1 }}"
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.elspot_monthly_average
+      data:
+        value: 0
