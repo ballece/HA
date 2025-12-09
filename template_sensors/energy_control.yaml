@@ -81,3 +81,19 @@
       {% set solar_guard = summer and solar_strong and (hour < solar_peak) %}
 
       {{ price_ok and time_ok and (soc > (min_soc + 15)) and (not solar_guard) }}
+      
+      
+  - name: "elpris_month_average"
+    unique_id: elpris_month_average
+    unit_of_measurement: "öre/kWh"
+    state: >
+      {{ states('sensor.elspot_monthly_average') | float(0) }}
+      
+  - name: "elpris_buy_kostnad"
+    unique_id: elpris_buy_kostnad
+    unit_of_measurement: "öre/kWh"
+    state: >
+      {{ (states('sensor.elpris_month_average') | float(0)) + 
+         (states('input_number.skekraft_paslag') | float(0)) + 
+         (states('input_number.skekraft_rorligt') | float(0)) }}
+         
