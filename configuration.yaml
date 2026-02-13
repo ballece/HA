@@ -28,6 +28,22 @@ input_number:
     step: 0.1
     unit_of_measurement: "öre/kWh"
 
+# Helper for elspot_monthly_average
+  elspot_monthly_sum:
+    name: "Sum of daily average prices this month"
+    min: 0
+    max: 10000
+    step: 0.01
+    unit_of_measurement: "öre/kWh"
+
+# Helper for elspot_monthly_average
+  elspot_monthly_days:
+    name: "Number of days this month"
+    min: 0
+    max: 31
+    step: 1
+    unit_of_measurement: "days"
+    
 # We buy if elpris_buy_kostnad <= buy_threshold_ore
   buy_threshold_ore:
     name: "Buy threshold (öre/kWh)"
