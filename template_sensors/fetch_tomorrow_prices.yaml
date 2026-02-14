@@ -10,11 +10,12 @@
     - condition: template   # Only retreive data if the sensor is empty or date is today
       value_template: >
         {% set prices = state_attr('sensor.elpriser_imorgon', 'data') %}
+        {% set tomorrow = (now() + timedelta(days=1)).date() %}
         {% if prices is not iterable or prices | length == 0 %}
           true
         {% else %}
           {% set first_start = prices[0].start | as_datetime %}
-          {{ first_start.date() == now().date() }}
+          {{ first_start.date() != tomorrow }}  # Recheck if old data is stuck
         {% endif %}
   actions:
     - action: nordpool.get_prices_for_date
