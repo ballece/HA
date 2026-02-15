@@ -6,13 +6,14 @@ default_config:
 frontend:
   themes: !include_dir_merge_named themes
 
-automation: !include automations.yaml
+automation: !include_dir_merge_list automations/
 script: !include scripts.yaml
 scene: !include scenes.yaml
 template: !include_dir_merge_list template_sensors/
 utility_meter: !include utilitymeter.yaml
 
 input_number:
+# https://www.bjerke-energi.se/elnat/tariffer/normaltariff-2026/
   normaltariff:
     name: "Normaltariff"
     min: 0
@@ -20,6 +21,38 @@ input_number:
     unit_of_measurement: kWh
     step: 0.1
 
+# Today's current top hour, to be compared to top1-3 and possibly stored
+  normaltariff_daily_max:
+    name: "Normaltariff daily max (06-22)"
+    min: 0
+    max: 100
+    step: 0.01
+    unit_of_measurement: "kWh"
+
+# 1st (of 3) top hours this month
+  normaltariff_top1:
+    name: "Normaltariff top 1 (daily max)"
+    min: 0
+    max: 100
+    step: 0.01
+    unit_of_measurement: "kWh"
+
+# 2nd (of 3) top hours this month
+  normaltariff_top2:
+    name: "Normaltariff top 2 (daily max)"
+    min: 0
+    max: 100
+    step: 0.01
+    unit_of_measurement: "kWh"
+
+# 3rd (of 3) top hours this month
+  normaltariff_top3:
+    name: "Normaltariff top 3 (daily max)"
+    min: 0
+    max: 100
+    step: 0.01
+    unit_of_measurement: "kWh"
+    
 # Current month's average spot price; updated each night with automation "Update Monthly Average with Today's Spot"
   elspot_monthly_average:
     name: "Elspot Monthly Average"
@@ -115,3 +148,29 @@ input_boolean:
   summer_mode:
     name: "Summer mode (solar-aware)"
     icon: mdi:white-balance-sunny
+
+
+input_datetime:
+# Today's current top hour, to be compared to top1-3 and possibly stored
+  normaltariff_daily_max_date:
+    name: "Normaltariff daily max date"
+    has_date: true
+    has_time: false
+
+# Date of 1st (of 3) top hours this month
+  normaltariff_top1_date:
+    name: "Normaltariff top1 date"
+    has_date: true
+    has_time: false
+
+# Date of 2nd (of 3) top hours this month
+  normaltariff_top2_date:
+    name: "Normaltariff top2 date"
+    has_date: true
+    has_time: false
+
+# Date of 3rd (of 3) top hours this month
+  normaltariff_top3_date:
+    name: "Normaltariff top3 date"
+    has_date: true
+    has_time: false

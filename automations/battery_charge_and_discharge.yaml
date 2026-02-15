@@ -1,7 +1,8 @@
 - id: '1740350947401'
   alias: Smart Battery Charge/Discharge with Nord Pool Prices
+  initial_state: false     # Disable for now
   description: ''
-  triggers:
+  trigger:
   - minutes: /15
     trigger: time_pattern
   conditions:
