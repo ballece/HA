@@ -1,12 +1,13 @@
-- triggers:
-    - trigger: time_pattern
+- trigger:
+    - platform: time_pattern
       minutes: "/10"    # Check every 10 minutes (only after 11 am, see below)
-    - trigger: homeassistant
+    - platform: homeassistant
       event: start
-  conditions:
-    - condition: template   # Only start checking after 11 am, with a reset just after midnight
+  condition:
+    - condition: template   # Only start checking after 11 am, with a reset after midnight
       value_template: >
-        {{ now().hour >= 11 or (now().hour == 0 and now().minute < 50) }}
+        {% set h = now().hour %}
+        {{ h >= 11 or h == 0 }}
     - condition: template   # Only retreive data if the sensor is empty or date is today
       value_template: >
         {% set prices = state_attr('sensor.elpriser_imorgon', 'data') %}
@@ -14,10 +15,11 @@
         {% if prices is not iterable or prices | length == 0 %}
           true
         {% else %}
-          {% set first_start = prices[0].start | as_datetime %}
-          {{ first_start.date() != tomorrow }}  # Recheck if old data is stuck
+          {% set first = prices[0] %}
+          {% set d = (first.start | as_datetime).date() %}
+          {{ d != tomorrow }}   # Recheck if old data is stuck
         {% endif %}
-  actions:
+  action:
     - action: nordpool.get_prices_for_date
       data:
         config_entry: 01JFZZ98CERMRTWQQ92NR5PD56
@@ -53,5 +55,4 @@
           {% else %}
             []
           {% endif %}
-#        availability: "{{ tomorrow_prices is defined }}"
         last_updated: "{{ now().isoformat() }}"
