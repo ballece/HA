@@ -22,7 +22,7 @@
       {% if peak in ['unknown','unavailable',''] %}
         13
       {% else %}
-        {{ peak | int }}
+        {{ as_datetime(peak).astimezone().hour }}
       {% endif %}
 
   # Huawei forcible flags
@@ -52,8 +52,8 @@
       {% set soc = states('sensor.batteries_state_of_capacity') | float(0) %}
       {% set max_soc = states('input_number.max_soc') | float(90) %}
       {% set reserve_soc = states('input_number.reserve_soc_morning') | float(75) %}
-      {% set solar_peak = states('sensor.solar_peak_hour') | int %}
-      {% set hour = states('sensor.current_hour') | int %}
+      {% set solar_peak = states('sensor.solar_peak_hour') | int(13) %}
+      {% set hour = states('sensor.current_hour') | int(now().hour) %}
       {% set ev_hours = states('sensor.is_ev_hours') in ['True','true','on'] %}
       {% set summer = is_state('input_boolean.summer_mode','on') %}
 
@@ -71,8 +71,8 @@
       {% set sell_thr = states('input_number.sell_threshold_ore') | float(200) %}
       {% set soc = states('sensor.batteries_state_of_capacity') | float(0) %}
       {% set min_soc = states('input_number.min_soc') | float(5) %}
-      {% set hour = states('sensor.current_hour') | int %}
-      {% set solar_peak = states('sensor.solar_peak_hour') | int %}
+      {% set hour = states('sensor.current_hour') | int(now().hour) %}
+      {% set solar_peak = states('sensor.solar_peak_hour') | int(13) %}
       {% set summer = is_state('input_boolean.summer_mode','on') %}
       {% set solar_strong = states('sensor.is_solar_strong_today') in ['True','true','on'] %}
 

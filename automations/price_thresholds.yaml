@@ -51,21 +51,21 @@
       value_template: "{{ now().day != 1 }}"
   action:
     - variables:
-        prices: >
+        rows: >
           {% set attrs = state_attr('sensor.elpriser_idag', 'data') %}
           {{ attrs if attrs is iterable else [] }}
         todays_avg: >
           {% set prices = rows | map(attribute='price') | map('float') | list %}
-          {% if prices|length > 0 %}
+          {% if prices | length > 0 %}
             {{ (prices | sum) / (prices | length) }}
           {% else %}
             0
           {% endif %}
         prev_sum: "{{ states('input_number.elspot_monthly_sum') | float(0) }}"
         prev_days: "{{ states('input_number.elspot_monthly_days') | int(0) }}"
-        new_sum: "{{ prev_sum + todays_avg }}"
+        new_sum: "{{ prev_sum + (todays_avg | float(0)) }}"
         new_days: "{{ prev_days + 1 }}"
-        new_avg: > 
+        new_avg: >
           {% if new_days > 0 %}
             {{ new_sum / new_days }}
           {% else %}
