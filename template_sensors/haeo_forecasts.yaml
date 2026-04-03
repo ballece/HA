@@ -8,8 +8,10 @@
         {% set today = state_attr('sensor.elpriser_idag', 'data') or [] %}
         {% set tomorrow = state_attr('sensor.elpriser_imorgon', 'data') or [] %}
         {% set ns = namespace(result=[]) %}
+        {% set tz_raw = now().strftime('%z') %}
+        {% set tz = tz_raw[:3] ~ ':' ~ tz_raw[3:] %}
         {% for item in (today + tomorrow) %}
-          {% set ns.result = ns.result + [{'start_time': item.start | replace(' ', 'T') ~ '+02:00', 'per_kwh': item.price}] %}
+          {% set ns.result = ns.result + [{'start_time': item.start | replace(' ', 'T') ~ tz, 'per_kwh': item.price}] %}
         {% endfor %}
         {{ ns.result }}
  
@@ -22,7 +24,9 @@
         {% set today = state_attr('sensor.elpriser_idag', 'data') or [] %}
         {% set tomorrow = state_attr('sensor.elpriser_imorgon', 'data') or [] %}
         {% set ns = namespace(result=[]) %}
+        {% set tz_raw = now().strftime('%z') %}
+        {% set tz = tz_raw[:3] ~ ':' ~ tz_raw[3:] %}
         {% for item in (today + tomorrow) %}
-          {% set ns.result = ns.result + [{'start_time': item.start | replace(' ', 'T') ~ '+02:00', 'per_kwh': item.price - 2.5}] %}
+          {% set ns.result = ns.result + [{'start_time': item.start | replace(' ', 'T') ~ tz, 'per_kwh': item.price - 2.5}] %}
         {% endfor %}
         {{ ns.result }}
