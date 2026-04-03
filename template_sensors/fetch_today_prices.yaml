@@ -50,5 +50,5 @@
             []
           {% endif %}
 #        prices: "{{ today_prices['SE3'] if today_prices is defined else [] }}"     # Funkar men tiderna är lite knas
-        availability: "{{ today_prices is defined }}"
         last_updated: "{{ now().isoformat() }}"
+

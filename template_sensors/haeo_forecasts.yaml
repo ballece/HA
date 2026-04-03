@@ -1,0 +1,28 @@
+- sensor:
+  - name: "HAEO Grid Import Price Forecast"
+    unique_id: haeo_grid_import_price_forecast
+    unit_of_measurement: "öre/kWh"
+    state: "{{ states('sensor.elpris_ore_current') | float(0) }}"
+    attributes:
+      forecasts: >
+        {% set today = state_attr('sensor.elpriser_idag', 'data') or [] %}
+        {% set tomorrow = state_attr('sensor.elpriser_imorgon', 'data') or [] %}
+        {% set ns = namespace(result=[]) %}
+        {% for item in (today + tomorrow) %}
+          {% set ns.result = ns.result + [{'start_time': item.start | replace(' ', 'T') ~ '+02:00', 'per_kwh': item.price}] %}
+        {% endfor %}
+        {{ ns.result }}
+ 
+  - name: "HAEO Grid Export Price Forecast"
+    unique_id: haeo_grid_export_price_forecast
+    unit_of_measurement: "öre/kWh"
+    state: "{{ (states('sensor.elpris_ore_current') | float(0)) - 2.5 }}"
+    attributes:
+      forecasts: >
+        {% set today = state_attr('sensor.elpriser_idag', 'data') or [] %}
+        {% set tomorrow = state_attr('sensor.elpriser_imorgon', 'data') or [] %}
+        {% set ns = namespace(result=[]) %}
+        {% for item in (today + tomorrow) %}
+          {% set ns.result = ns.result + [{'start_time': item.start | replace(' ', 'T') ~ '+02:00', 'per_kwh': item.price - 2.5}] %}
+        {% endfor %}
+        {{ ns.result }}
