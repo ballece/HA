@@ -25,7 +25,15 @@
         {{ as_datetime(peak).astimezone().hour }}
       {% endif %}
 
-  # Huawei forcible flags
+  - name: "is_solar_strong_today"
+    unique_id: is_solar_strong_today
+    state: >
+      {% set summer = is_state('input_boolean.summer_mode','on') %}
+      {% set daylight = states('sensor.is_daylight') in ['True','true','on'] %}
+      {{ summer and daylight }}
+
+
+# Huawei forcible flags
   - name: "is_forcible_charging"
     unique_id: is_forcible_charging
     state: >
@@ -36,9 +44,16 @@
     state: >
       {{ states('sensor.batteries_forcible_discharge') in ['True','true','on','1'] }}
 
-  - name: "is_solar_strong_today"
-    unique_id: is_solar_strong_today
+
+# HAEO charging flags
+  - name: "haeo_planned_charging"
+    unique_id: haeo_planned_charging
     state: >
-      {% set summer = is_state('input_boolean.summer_mode','on') %}
-      {% set daylight = states('sensor.is_daylight') in ['True','true','on'] %}
-      {{ summer and daylight }}
+      {{ states('sensor.battery_charge_power') | float(0) > 0.5 }}
+    icon: mdi:battery-charging
+
+  - name: "haeo_planned_discharging"
+    unique_id: haeo_planned_discharging
+    state: >
+      {{ states('sensor.battery_discharge_power') | float(0) > 0.5 }}
+    icon: mdi:battery-minus

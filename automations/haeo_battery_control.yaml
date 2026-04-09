@@ -8,9 +8,14 @@
     - choose:
       - conditions:
         - condition: state
-          entity_id: sensor.is_forcible_charging
+          entity_id: sensor.haeo_planned_charging
           state: "True"
         sequence:
+          - service: huawei_solar.forcible_charge
+            data:
+              device_id: 898980bfd3e211f7d2b52da0aeee8a91
+              duration: 20
+              power: "{{ (states('sensor.battery_charge_power') | float(0) * 1000) | int }}"
           - service: select.select_option
             target:
               entity_id: select.batteries_working_mode
@@ -21,9 +26,14 @@
               entity_id: switch.batteries_charge_from_grid
       - conditions:
         - condition: state
-          entity_id: sensor.is_forcible_discharging
+          entity_id: sensor.haeo_planned_discharging
           state: "True"
         sequence:
+          - service: huawei_solar.forcible_discharge
+            data:
+              device_id: 898980bfd3e211f7d2b52da0aeee8a91
+              duration: 20
+              power: "{{ (states('sensor.battery_discharge_power') | float(0) * 1000) | int }}"
           - service: select.select_option
             target:
               entity_id: select.batteries_working_mode
@@ -33,6 +43,9 @@
             target:
               entity_id: switch.batteries_charge_from_grid
       default:
+        - service: huawei_solar.stop_forcible_charge
+          data:
+            device_id: 898980bfd3e211f7d2b52da0aeee8a91
         - service: select.select_option
           target:
             entity_id: select.batteries_working_mode
