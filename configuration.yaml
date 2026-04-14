@@ -70,12 +70,6 @@ input_number:
     icon: mdi:battery
     
 
-input_boolean:
-  summer_mode:
-    name: "Summer mode (solar-aware)"
-    icon: mdi:white-balance-sunny
-
-
 input_datetime:
 # Today's current top hour, to be compared to top1-3 and possibly stored
   normaltariff_daily_max_date:
