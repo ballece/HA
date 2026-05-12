@@ -57,3 +57,22 @@
     state: >
       {{ states('sensor.battery_discharge_power') | float(0) > 0.5 }}
     icon: mdi:battery-minus
+
+# Limit charging to not exceed normaltariff
+  - name: "normaltariff_max_charge_power"
+    unique_id: normaltariff_max_charge_power
+    unit_of_measurement: "kW"
+    state: >
+      {% set haeo_kw = states('sensor.battery_charge_power') | float(0) %}
+      {% set top3 = states('input_number.normaltariff_top3') | float(0) %}
+      {% set h = now().hour | int %}
+      {% if top3 <= 0 or h < 6 or h >= 22 %}
+        {{ haeo_kw }}
+      {% else %}
+        {% set grid_kw = [-(states('sensor.power_meter_active_power') | float(0)) / 1000, 0] | max %}
+        {% set batt_kw = [states('sensor.batteries_charge_discharge_power') | float(0) / 1000, 0] | max %}
+        {% set net_load = grid_kw - batt_kw %}
+        {% set safe_kw = [top3 - net_load, 0] | max %}
+        {{ [haeo_kw, safe_kw] | min | round(2) }}
+      {% endif %}
+

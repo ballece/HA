@@ -10,6 +10,8 @@
         - condition: state
           entity_id: sensor.haeo_planned_charging
           state: "True"
+        - condition: template
+          value_template: "{{ states('sensor.house_consumption_power') | float(0) < 9000 }}"   # If house load already exceeds 9 kW (loading electric car), don't also charge batteries
         sequence:
           - service: huawei_solar.forcible_charge
             data:
@@ -54,4 +56,17 @@
         - service: switch.turn_off
           target:
             entity_id: switch.batteries_charge_from_grid
-  mode: single    
+  mode: single
+  
+  
+- alias: Battery Control Loop Watchdog
+  description: Re-enables battery control loop after HA restart (protects against toggle script delay being interrupted)
+  trigger:
+   - platform: homeassistant
+     event: start
+  action:
+    - service: automation.turn_on
+      target:
+        entity_id: automation.battery_control_loop_15m
+  mode: single
+

@@ -1,0 +1,73 @@
+ toggle_battery_charge:
+   alias: Toggle Battery Charge
+   mode: restart
+   sequence:
+     - choose:
+         - conditions:
+             - condition: template
+               value_template: "{{ 'Charging' in states('sensor.batteries_forcible_charge') }}"
+           sequence:
+             - service: huawei_solar.stop_forcible_charge
+               data:
+                 device_id: 898980bfd3e211f7d2b52da0aeee8a91
+             - service: automation.turn_on
+               target:
+                 entity_id: automation.battery_control_loop_15m
+       default:
+         - service: huawei_solar.forcible_charge
+           data:
+             device_id: 898980bfd3e211f7d2b52da0aeee8a91
+             duration: 30
+             power: 5000
+         - service: select.select_option
+           target:
+             entity_id: select.batteries_working_mode
+           data:
+             option: fixed_charge_discharge
+         - service: switch.turn_on
+           target:
+             entity_id: switch.batteries_charge_from_grid
+         - service: automation.turn_off
+           target:
+             entity_id: automation.battery_control_loop_15m
+         - delay: "00:30:00"
+         - service: automation.turn_on
+           target:
+             entity_id: automation.battery_control_loop_15m
+ 
+ toggle_battery_discharge:
+   alias: Toggle Battery Discharge
+   mode: restart
+   sequence:
+     - choose:
+         - conditions:
+             - condition: template
+               value_template: "{{ 'Discharging' in states('sensor.batteries_forcible_charge') }}"
+           sequence:
+             - service: huawei_solar.stop_forcible_charge
+               data:
+                 device_id: 898980bfd3e211f7d2b52da0aeee8a91
+             - service: automation.turn_on
+               target:
+                 entity_id: automation.battery_control_loop_15m
+       default:
+         - service: huawei_solar.forcible_discharge
+           data:
+             device_id: 898980bfd3e211f7d2b52da0aeee8a91
+             duration: 30
+             power: 5000
+         - service: select.select_option
+           target:
+             entity_id: select.batteries_working_mode
+           data:
+             option: fully_fed_to_grid
+         - service: switch.turn_off
+           target:
+             entity_id: switch.batteries_charge_from_grid
+         - service: automation.turn_off
+           target:
+             entity_id: automation.battery_control_loop_15m
+         - delay: "00:30:00"
+         - service: automation.turn_on
+           target:
+             entity_id: automation.battery_control_loop_15m
