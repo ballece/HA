@@ -94,3 +94,24 @@ input_datetime:
     name: "Normaltariff top3 date"
     has_date: true
     has_time: false
+
+
+
+recorder:
+  purge_keep_days: 5
+  exclude:
+    entity_globs:
+      - sensor.*shadow_price
+      - sensor.inverter_pv_*
+      - sensor.batteries_bus_*
+      - sensor.solcast_pv_forecast_power_in_*
+    entities:
+      - sensor.power_meter_power_factor
+      - sensor.power_meter_frequency
+      - sensor.battery_charge_discharge_power_with_loss
+      - sensor.house_consumption_power_forecast
+      - sensor.haeo_planned_charging
+      - sensor.haeo_planned_discharging
+      - sensor.normaltariff_max_charge_power
+      - sensor.current_hour
+
