@@ -30,6 +30,26 @@ input_number:
     unit_of_measurement: "%"
     icon: mdi:battery
     
+  petrus_battery_snapshot:
+    name: "Petrus battery snapshot"
+    initial: 0
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+
+input_text:
+  petrus_action_snapshot:
+    name: "Petrus action snapshot"
+    initial: ""
+    max: 255
+
+input_datetime:
+  petrus_last_seen_snapshot:
+    name: "Petrus last seen snapshot"
+    has_date: true
+    has_time: true
+
 
 
 recorder:

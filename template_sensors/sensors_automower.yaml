@@ -1,0 +1,41 @@
+- sensor:
+  - name: "Petrus last seen"
+    unique_id: petrus_last_seen
+    state: >
+      {% set ent = 'sensor.garden_petrus_battery' %}
+      {% if states(ent) in ['unknown','unavailable',''] %}
+        unknown
+      {% else %}
+        {{ as_timestamp(states[ent].last_updated) | timestamp_custom('%Y-%m-%d %H:%M:%S', true) }}
+      {% endif %}
+    icon: mdi:clock
+
+  - name: "Petrus time since last seen"
+    unique_id: petrus_time_since_last_seen
+    state: >
+      {% set ent = 'sensor.garden_petrus_battery' %}
+      {% set ts = as_timestamp(states[ent].last_updated) %}
+      {% if ts == 0 or ts is none %}
+        unknown
+      {% set diff = (as_timestamp(now()) - ts) | int %}
+      {% elif (as_timestamp(now()) - ts) < 60 %}
+        {{ (as_timestamp(now()) - ts) | int }} seconds ago
+      {% elif (as_timestamp(now()) - ts) < 3600 %}
+        {{ ((as_timestamp(now()) - ts) / 60) | int }} minutes ago
+      {% elif (as_timestamp(now()) - ts) < 86400 %}
+        {{ ((as_timestamp(now()) - ts) / 3600) | int }} hours ago
+      {% else %}
+        {{ ((as_timestamp(now()) - ts) / 86400) | int }} days ago
+      {% endif %}
+    icon: mdi:timer-sand
+
+  - name: "Petrus battery (last reported)"
+    unique_id: petrus_battery_last_reported
+    state: "{{ states('sensor.garden_petrus_battery') }}"
+    unit_of_measurement: "%"
+    icon: mdi:battery
+
+  - name: "Petrus current action (last reported)"
+    unique_id: petrus_current_action_last_reported
+    state: "{{ states('lawn_mower.garden_petrus') }}"
+    icon: mdi:robot-mower

@@ -1,0 +1,23 @@
+- alias: Petrus snapshot on reconnect
+  description: Save battery/action/time when mower is seen (even if values unchanged)
+  trigger:
+    - platform: state
+      entity_id: sensor.petrus_last_seen
+  condition: []
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.petrus_battery_snapshot
+      data:
+        value: "{{ states('sensor.garden_petrus_battery')|float(0) }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.petrus_action_snapshot
+      data:
+        value: "{{ states('lawn_mower.garden_petrus') }}"
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.petrus_last_seen_snapshot
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+  mode: single
