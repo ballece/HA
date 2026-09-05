@@ -17,7 +17,7 @@
             data:
               device_id: 898980bfd3e211f7d2b52da0aeee8a91
               duration: 20
-              power: "{{ (states('sensor.battery_charge_power') | float(0) * 1000) | int }}"
+              power: "{{ [ (states('sensor.battery_charge_power') | float(0) * 1000) | int, 5000 ] | min }}"
           - service: select.select_option
             target:
               entity_id: select.batteries_working_mode
@@ -35,7 +35,7 @@
             data:
               device_id: 898980bfd3e211f7d2b52da0aeee8a91
               duration: 20
-              power: "{{ (states('sensor.battery_discharge_power') | float(0) * 1000) | int }}"
+              power: "{{ [ (states('sensor.battery_discharge_power') | float(0) * 1000) | int, 5000 ] | min }}"
           - service: select.select_option
             target:
               entity_id: select.batteries_working_mode
