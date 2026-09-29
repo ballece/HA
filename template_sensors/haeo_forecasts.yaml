@@ -33,3 +33,19 @@
         {% endfor %}
         {{ ns.result }}
 
+  - name: "house_consumption_power_forecast_kW"
+    unique_id: house_consumption_power_forecast_kw
+    unit_of_measurement: "kW"
+    state: "{{ (states('sensor.house_consumption_power_forecast') | float(0)) / 1000 }}"
+    attributes:
+      forecast: >
+        {% set src = state_attr('sensor.house_consumption_power_forecast','forecast') or [] %}
+        {% set ns = namespace(result=[]) %}
+        {% for item in src %}
+          {% set t = item.time if item.time is defined else (item.start if item.start is defined else None) %}
+          {% set v = (item.value | float(0)) / 1000 %}
+          {% if t %}
+            {% set ns.result = ns.result + [{'time': t, 'value': v}] %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.result }}
