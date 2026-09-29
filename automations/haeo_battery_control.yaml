@@ -11,7 +11,7 @@
           entity_id: sensor.haeo_planned_charging
           state: "True"
         - condition: template
-          value_template: "{{ states('sensor.house_consumption_power') | float(0) < 9000 }}"   # If house load already exceeds 9 kW (loading electric car), don't also charge batteries
+          value_template: "{{ states('sensor.house_consumption_power') | float(0) < 5000 }}"   # If house load already exceeds 5 kW (loading electric car), don't also charge batteries
         sequence:
           - service: huawei_solar.forcible_charge
             data:

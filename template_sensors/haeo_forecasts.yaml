@@ -1,8 +1,8 @@
 - sensor:
   - name: "HAEO Grid Import Price Forecast"
     unique_id: haeo_grid_import_price_forecast
-    unit_of_measurement: "öre/kWh"
-    state: "{{ states('sensor.elpris_ore_current') | float(0) }}"
+    unit_of_measurement: "SEK/kWh"
+    state: "{{ (states('sensor.elpris_ore_current') | float(0)) / 100 }}"
     attributes:
       forecasts: >
         {% set today = state_attr('sensor.elpriser_idag', 'data') or [] %}
@@ -11,14 +11,15 @@
         {% set tz_raw = now().strftime('%z') %}
         {% set tz = tz_raw[:3] ~ ':' ~ tz_raw[3:] %}
         {% for item in (today + tomorrow) %}
-          {% set ns.result = ns.result + [{'start_time': item.start | replace(' ', 'T') ~ tz, 'end_time': item.end | replace(' ', 'T') ~ tz, 'per_kwh': item.price}] %}
+          {% set price_sek = (item.price | float(0)) / 100 %}
+          {% set ns.result = ns.result + [{'start_time': item.start | replace(' ', 'T') ~ tz, 'end_time': item.end | replace(' ', 'T') ~ tz, 'per_kwh': price_sek}] %}
         {% endfor %}
         {{ ns.result }}
  
   - name: "HAEO Grid Export Price Forecast"
     unique_id: haeo_grid_export_price_forecast
     unit_of_measurement: "öre/kWh"
-    state: "{{ (states('sensor.elpris_ore_current') | float(0)) - 2.5 }}"
+    state: "{{ (states('sensor.elpris_ore_current') | float(0) / 100) - 0.025 }}"
     attributes:
       forecasts: >
         {% set today = state_attr('sensor.elpriser_idag', 'data') or [] %}
@@ -27,6 +28,8 @@
         {% set tz_raw = now().strftime('%z') %}
         {% set tz = tz_raw[:3] ~ ':' ~ tz_raw[3:] %}
         {% for item in (today + tomorrow) %}
-          {% set ns.result = ns.result + [{'start_time': item.start | replace(' ', 'T') ~ tz, 'end_time': item.end | replace(' ', 'T') ~ tz, 'per_kwh': item.price - 2.5}] %}
+          {% set price_sek = (item.price | float(0)) / 100 - 0.025 %}
+          {% set ns.result = ns.result + [{'start_time': item.start | replace(' ', 'T') ~ tz, 'end_time': item.end | replace(' ', 'T') ~ tz, 'per_kwh': price_sek}] %}
         {% endfor %}
         {{ ns.result }}
+
