@@ -34,7 +34,7 @@
         {{ ns.result }}
 
   - name: "house_consumption_power_forecast_kW"
-    unique_id: house_consumption_power_forecast_kW
+    unique_id: house_consumption_power_forecast_kw
     unit_of_measurement: "kW"
     state: "{{ (states('sensor.house_consumption_power_forecast') | float(0)) / 1000 }}"
     attributes:
